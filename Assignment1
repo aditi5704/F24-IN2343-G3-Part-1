@@ -1,0 +1,205 @@
+import java.util.ArrayList;
+import java.util.List;
+
+// Main College Enrollment System
+public class CollegeEnrollmentSystem {
+    private List<Student> students;
+    private ClassCatalog catalog;
+    private ScheduleGenerator scheduleGenerator;
+
+    public CollegeEnrollmentSystem() {
+        students = new ArrayList<>();
+        catalog = new ClassCatalog();
+        scheduleGenerator = new ScheduleGenerator();
+    }
+
+    public void addStudent(Student student) {
+        students.add(student);
+    }
+
+    public void enrollStudentInClass(int studentID, int classID) {
+        Student student = findStudentByID(studentID);
+        Class aClass = catalog.findClassByID(classID);
+
+        if (student != null && aClass != null) {
+            student.enrollInClass(aClass);
+            aClass.addStudent(student);
+        }
+    }
+
+    private Student findStudentByID(int studentID) {
+        for (Student student : students) {
+            if (student.getStudentID() == studentID) {
+                return student;
+            }
+        }
+        return null;
+    }
+
+    public static void main(String[] args) {
+        CollegeEnrollmentSystem system = new CollegeEnrollmentSystem();
+
+        Student student1 = new Student(1, "Alice");
+        Student student2 = new Student(2, "Bob");
+
+        system.addStudent(student1);
+        system.addStudent(student2);
+
+        Class math101 = new Class(101, "Math 101", "Prof. Smith", 30);
+        Class cs101 = new Class(102, "CS 101", "Prof. Johnson", 25);
+
+        system.catalog.addClass(math101);
+        system.catalog.addClass(cs101);
+
+        system.enrollStudentInClass(1, 101);
+        system.enrollStudentInClass(2, 102);
+
+        System.out.println("Schedule for Alice: " + student1.getSchedule());
+        System.out.println("Schedule for Bob: " + student2.getSchedule());
+    }
+}
+
+// Student class
+class Student {
+    private int studentID;
+    private String name;
+    private List<Enrollment> enrollments;
+
+    public Student(int studentID, String name) {
+        this.studentID = studentID;
+        this.name = name;
+        this.enrollments = new ArrayList<>();
+    }
+
+    public void enrollInClass(Class newClass) {
+        Enrollment enrollment = new Enrollment(this, newClass);
+        enrollments.add(enrollment);
+    }
+
+    public List<Class> getSchedule() {
+        List<Class> schedule = new ArrayList<>();
+        for (Enrollment enrollment : enrollments) {
+            schedule.add(enrollment.getEnrolledClass());
+        }
+        return schedule;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getStudentID() {
+        return studentID;
+    }
+}
+
+// Class class
+class Class {
+    private int classID;
+    private String className;
+    private String instructor;
+    private int capacity;
+    private List<Student> enrolledStudents;
+
+    public Class(int classID, String className, String instructor, int capacity) {
+        this.classID = classID;
+        this.className = className;
+        this.instructor = instructor;
+        this.capacity = capacity;
+        this.enrolledStudents = new ArrayList<>();
+    }
+
+    public void addStudent(Student student) {
+        if (enrolledStudents.size() < capacity) {
+            enrolledStudents.add(student);
+        } else {
+            System.out.println("Class is full");
+        }
+    }
+
+    public void removeStudent(Student student) {
+        enrolledStudents.remove(student);
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public int getClassID() {
+        return classID;
+    }
+
+    public String getInstructor() {
+        return instructor;
+    }
+
+    public List<Student> getEnrolledStudents() {
+        return enrolledStudents;
+    }
+}
+
+// Enrollment class
+class Enrollment {
+    private Student student;
+    private Class enrolledClass;
+    private String enrollmentDate;
+
+    public Enrollment(Student student, Class enrolledClass) {
+        this.student = student;
+        this.enrolledClass = enrolledClass;
+        this.enrollmentDate = "2024-09-23"; // For simplicity, we use a fixed date
+    }
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public Class getEnrolledClass() {
+        return enrolledClass;
+    }
+
+    public String getEnrollmentDate() {
+        return enrollmentDate;
+    }
+}
+
+// ClassCatalog class
+class ClassCatalog {
+    private List<Class> classes;
+
+    public ClassCatalog() {
+        classes = new ArrayList<>();
+    }
+
+    public void addClass(Class newClass) {
+        classes.add(newClass);
+    }
+
+    public void removeClass(Class oldClass) {
+        classes.remove(oldClass);
+    }
+
+    public Class findClassByID(int classID) {
+        for (Class aClass : classes) {
+            if (aClass.getClassID() == classID) {
+                return aClass;
+            }
+        }
+        return null;
+    }
+
+    public List<Class> getAllClasses() {
+        return classes;
+    }
+}
+
+// ScheduleGenerator class
+class ScheduleGenerator {
+    public List<Class> generateScheduleForStudent(Student student) {
+        return student.getSchedule();
+    }
+
+    public List<Class> generateScheduleForClass(Class aClass) {
+        return aClass.getEnrolledStudents();
+    }
+}
